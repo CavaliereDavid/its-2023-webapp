@@ -3,6 +3,8 @@ name: "Build and Deploy"
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -24,8 +26,12 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Test
+        run: npm run test:unit
+
       - name: Archive production artifacts
         uses: actions/upload-artifact@v4
+        if: github.event_name == 'push'
         with:
           name: build
           path: build
@@ -33,6 +39,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
+    if: github.event_name == 'push'
     steps:
       - name: Download production artifacts
         uses: actions/download-artifact@v4
